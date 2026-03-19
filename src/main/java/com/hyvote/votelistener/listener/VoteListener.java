@@ -107,6 +107,16 @@ public class VoteListener {
 
         // Record vote and get updated player data with streak info
         PlayerVoteData playerData = voteDataManager.recordVote(uuid, username);
+        playerData.addVoteSite(serviceName);
+
+        logger.at(Level.INFO).log("Player %s voted on: %s", username, serviceName);
+
+        if (playerData.hasVotedOnAllSites()) {
+            logger.at(Level.INFO).log("Player %s completed all 3 votes!", username);
+            executeCommand("nick color " + username);
+            playerData.resetVoteSites();
+        }
+
         int currentStreak = playerData.getCurrentStreak();
         int totalVotes = playerData.getTotalVotes();
 
