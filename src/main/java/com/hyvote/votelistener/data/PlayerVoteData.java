@@ -1,5 +1,6 @@
 package com.hyvote.votelistener.data;
-
+import java.util.HashSet;
+import java.util.Set;
 /**
  * Model representing a player's vote data including streak tracking.
  *
@@ -32,6 +33,16 @@ public class PlayerVoteData {
      * Epoch milliseconds timestamp of the player's last vote.
      */
     private long lastVoteTimestamp;
+
+    /**
+     * Sites the player has voted on within the current 24h window.
+     */
+    private Set<String> voteSites = new HashSet<>();
+
+    /**
+     * Timestamp of the first vote in the current 24h window.
+     */
+    private long firstVoteTimestamp;
 
     /**
      * Default constructor for Gson deserialization.
@@ -135,5 +146,40 @@ public class PlayerVoteData {
      */
     public void setLastVoteTimestamp(long lastVoteTimestamp) {
         this.lastVoteTimestamp = lastVoteTimestamp;
+    }
+
+
+    /**
+     * Adds a voting site and handles 24h reset logic.
+     */
+    public void addVoteSite(String site) {
+        long now = System.currentTimeMillis();
+        if (firstVoteTimestamp != 0 && (now - firstVoteTimestamp) > 86400000) {
+            voteSites.clear();
+            firstVoteTimestamp = now;
+        }
+
+        if (voteSites.isEmpty()) {
+            firstVoteTimestamp = now;
+        }
+
+        voteSites.add(site);
+    }
+
+    /**
+     * Checks if player has voted on all required sites.
+     */
+    public boolean hasVotedOnAllSites() {
+        return voteSites.contains("HytaleServers")
+                && voteSites.contains("HytaleTop100")
+                && voteSites.contains("HytaleOnlineServers");
+    }
+
+    /**
+     * Resets the voting sites tracking.
+     */
+    public void resetVoteSites() {
+        voteSites.clear();
+        firstVoteTimestamp = 0;
     }
 }
